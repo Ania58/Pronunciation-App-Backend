@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
+import { Word } from '../types/Word';
 
 export const getSampleWords = (req: Request, res: Response) => {
   res.json([
-    { word: "cat", ipa: "/kæt/" },
-    { word: "thought", ipa: "/θɔːt/" },
-    { word: "record", ipa: "/ˈrek.ɔːd/" }
+    { word: "cat", ipa: "/kæt/", language: "en", difficulty: "easy", category: "vowels"  },
+    { word: "thought", ipa: "/θɔːt/", language: "en", difficulty: "medium", category: "vowels" },
+    { word: "record", ipa: "/ˈrek.ɔːd/", language: "en", difficulty: "hard", category: "stress" }
   ]);
 };
