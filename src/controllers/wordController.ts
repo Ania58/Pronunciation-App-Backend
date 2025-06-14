@@ -80,3 +80,22 @@ export const getRandomWord = (req: Request, res: Response): void => {
   const random = list[Math.floor(Math.random() * list.length)];
   res.json(random);
 };
+
+export const getWordById = (req: Request, res: Response): void => {
+  const { id } = req.params;
+
+  const allWords = [...curatedWordList, ...(fullWordList as Word[])];
+
+  const result = allWords.find((entry) => entry.id === id);
+
+  if (!result) {
+    res.status(404).json({ message: "Word with given ID not found" });
+    return;
+  }
+
+  res.json({
+    ...result,
+    audioUrl: `https://api.dictionaryapi.dev/media/pronunciations/en/${result.word}-us.mp3`
+  });
+};
+
