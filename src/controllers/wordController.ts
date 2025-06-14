@@ -52,7 +52,10 @@ export const getWordByText = (req: Request, res: Response): void => {
     return;
   }
 
-  res.json(result);
+  res.json({
+  ...result,
+  audioUrl: `https://api.dictionaryapi.dev/media/pronunciations/en/${result.word}-us.mp3`
+  });
 };
 
 export const searchWords = (req: Request, res: Response) :void => {
