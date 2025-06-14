@@ -71,3 +71,9 @@ export const searchWords = (req: Request, res: Response) :void => {
 
   res.json(matches);
 };
+
+export const getRandomWord = (req: Request, res: Response): void => {
+  const list = fullWordList as Word[];
+  const random = list[Math.floor(Math.random() * list.length)];
+  res.json(random);
+};
