@@ -5,7 +5,7 @@ import fullWordList from '../data/wordListWithIPA.json';
 
 
 export const getSampleWords = (req: Request, res: Response) => {
-const { language, difficulty, category } = req.query;
+const { language, difficulty, category, page = "1", limit = "50" } = req.query;
 
 let filteredWords = curatedWordList;
 
@@ -21,7 +21,20 @@ if (category) {
   filteredWords = filteredWords.filter((word: Word) => word.category?.toLowerCase() === (category as string).toLowerCase());
 };
 
-  res.json(filteredWords);
+  const pageNum = parseInt(page as string);
+  const limitNum = parseInt(limit as string);
+  const start = (pageNum - 1) * limitNum;
+  const end = start + limitNum;
+
+  const paginated = filteredWords.slice(start, end);
+
+  res.json({
+    total: filteredWords.length,
+    page: pageNum,
+    limit: limitNum,
+    totalPages: Math.ceil(filteredWords.length / limitNum),
+    results: paginated,
+  });
 };
 
 export const getAllWords = (req: Request, res: Response) => {
