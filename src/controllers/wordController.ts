@@ -27,3 +27,17 @@ if (category) {
 export const getAllWords = (req: Request, res: Response) => {
   res.json(fullWordList);
 };
+
+export const getWordByText = (req: Request, res: Response): void => {
+  const { word } = req.params;
+  const lower = word.toLowerCase();
+
+  const result = (fullWordList as Word[]).find((entry) => entry.word.toLowerCase() === lower);
+
+  if (!result) {
+    res.status(404).json({ message: "Word not found" });
+    return;
+  }
+
+  res.json(result);
+}
