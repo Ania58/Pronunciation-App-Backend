@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Word } from '../types/Word';
-import { curatedWordList } from '../data/curatedWordList';
-import fullWordList from '../data/wordListWithIPA.json';
+import { curatedWordList } from '../data/curatedWordListWithIds';
+import fullWordList from '../data/wordListWithIds.json';
 
 
 export const getSampleWords = (req: Request, res: Response) => {
