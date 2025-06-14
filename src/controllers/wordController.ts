@@ -40,4 +40,21 @@ export const getWordByText = (req: Request, res: Response): void => {
   }
 
   res.json(result);
-}
+};
+
+export const searchWords = (req: Request, res: Response) :void => {
+  const { query } = req.query;
+
+  if (!query || typeof query !== 'string') {
+   res.status(400).json({ message: 'Query parameter is required' });
+    return;
+  }
+
+  const lower = query.toLowerCase();
+
+  const matches = (fullWordList as Word[]).filter((entry) =>
+    entry.word.toLowerCase().startsWith(lower)
+  ).slice(0, 50); 
+
+  res.json(matches);
+};
