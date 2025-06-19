@@ -38,7 +38,42 @@ if (category) {
 };
 
 export const getAllWords = (req: Request, res: Response) => {
-  res.json(fullWordList);
+  const { page = "1", limit = "50", sort = "word", order = "asc", query = "" } = req.query;
+
+  const pageNum = parseInt(page as string);
+  const limitNum = parseInt(limit as string);
+  const sortKey = sort as keyof Word;
+  const sortOrder = order === "desc" ? -1 : 1;
+  const searchTerm = (query as string).toLowerCase();
+
+  let filtered = fullWordList as Word[];
+
+  if (query) {
+    filtered = filtered.filter(w => w.word.toLowerCase().includes(searchTerm));
+  }
+  if (searchTerm) {
+    filtered = filtered.filter(w => w.word.toLowerCase().startsWith(searchTerm));
+  }
+
+  
+  filtered.sort((a, b) => {
+    const aVal = (a[sortKey] ?? '').toString().toLowerCase();
+    const bVal = (b[sortKey] ?? '').toString().toLowerCase();
+    return aVal.localeCompare(bVal) * sortOrder;
+  });
+
+  
+  const start = (pageNum - 1) * limitNum;
+  const end = start + limitNum;
+  const paginated = filtered.slice(start, end);
+
+  res.json({
+    total: filtered.length,
+    page: pageNum,
+    limit: limitNum,
+    totalPages: Math.ceil(filtered.length / limitNum),
+    results: paginated,
+  });
 };
 
 export const getWordByText = (req: Request, res: Response): void => {
