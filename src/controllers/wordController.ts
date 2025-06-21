@@ -134,3 +134,33 @@ export const getWordById = (req: Request, res: Response): void => {
   });
 };
 
+const wordStatuses: Record<string, 'mastered' | 'practice'> = {};
+
+
+export const updateWordStatus = (req: Request, res: Response): void => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!['mastered', 'practice'].includes(status)) {
+    res.status(400).json({ message: 'Invalid status value' });
+    return;
+  }
+
+  const allWords = [...curatedWordList, ...(fullWordList as Word[])];
+  const exists = allWords.find((entry) => entry.id === id);
+
+  if (!exists) {
+    res.status(404).json({ message: 'Word not found' });
+    return;
+  }
+
+  wordStatuses[id] = status;
+  res.json({ message: `Status set to '${status}' for word ${id}` });
+};
+
+
+export const getAllStatuses = (_req: Request, res: Response): void => {
+  res.json(wordStatuses);
+};
+
+
