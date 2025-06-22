@@ -38,7 +38,7 @@ if (category) {
 };
 
 export const getAllWords = (req: Request, res: Response) => {
-  const { page = "1", limit = "50", sort = "word", order = "asc", query = "" } = req.query;
+  const { page = "1", limit = "50", sort = "word", order = "asc", query = "", category, difficulty } = req.query;
 
   const pageNum = parseInt(page as string);
   const limitNum = parseInt(limit as string);
@@ -53,6 +53,14 @@ export const getAllWords = (req: Request, res: Response) => {
   }
   if (searchTerm) {
     filtered = filtered.filter(w => w.word.toLowerCase().startsWith(searchTerm));
+  }
+
+  if (difficulty) {
+    filtered = filtered.filter(w => w.difficulty?.toLowerCase() === (difficulty as string).toLowerCase());
+  }
+
+  if (category) {
+    filtered = filtered.filter(w => w.category?.toLowerCase() === (category as string).toLowerCase());
   }
 
   
