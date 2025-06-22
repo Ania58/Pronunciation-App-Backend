@@ -54,11 +54,27 @@ function assignDifficulty(word: string, ipa: string): "easy" | "medium" | "hard"
   return "medium";
 }
 
-const enriched: EnrichedWord[] = sampled.map((entry) => ({
+function sanitizeWord(word: string): string {
+  return word
+    .replace(/[‘’‛´`]/g, "'") 
+    .replace(/[“”„"]/g, '"')  
+    .replace(/[^a-zA-Z0-9'’-]/g, '') 
+}
+
+
+/*const enriched: EnrichedWord[] = sampled.map((entry) => ({
   ...entry,
   difficulty: assignDifficulty(entry.word, entry.ipa),
   category: assignCategory(entry.ipa),
+}));*/
+
+const enriched: EnrichedWord[] = sampled.map((entry) => ({
+  ...entry,
+  word: sanitizeWord(entry.word),
+  difficulty: assignDifficulty(entry.word, entry.ipa),
+  category: assignCategory(entry.ipa),
 }));
+
 
 
 const header = 'import { Word } from "../types/Word";\n\n';
