@@ -5,7 +5,7 @@ import fullWordList from '../data/wordListWithIds.json';
 
 
 export const getSampleWords = (req: Request, res: Response) => {
-const { language, difficulty, category, page = "1", limit = "50" } = req.query;
+const { language, difficulty, category,  query = "", page = "1", limit = "50" } = req.query;
 
 let filteredWords = curatedWordList;
 
@@ -20,6 +20,13 @@ if (difficulty) {
 if (category) {
   filteredWords = filteredWords.filter((word: Word) => word.category?.toLowerCase() === (category as string).toLowerCase());
 };
+
+const searchTerm = (query as string).toLowerCase();
+  if (searchTerm) {
+    filteredWords = filteredWords.filter(
+      (word) => word.word.toLowerCase().includes(searchTerm)
+    );
+  }
 
   const pageNum = parseInt(page as string);
   const limitNum = parseInt(limit as string);
