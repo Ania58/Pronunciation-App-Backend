@@ -28,3 +28,21 @@ export const submitPronunciationAttempt = async (req: Request, res: Response): P
      return;
   }
 };
+
+export const getPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
+  const { id: wordId } = req.params;
+  const { userId } = req.query;
+
+  if (!userId) {
+    res.status(400).json({ message: 'Missing userId query parameter' });
+    return;
+  }
+
+  try {
+    const attempts = await PronunciationAttemptModel.find({ wordId, userId });
+    res.json(attempts);
+  } catch (error) {
+    console.error('Error fetching pronunciation attempts:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
