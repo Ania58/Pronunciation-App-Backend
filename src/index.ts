@@ -1,6 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import wordRoutes from './routes/wordRoutes';
+import dotenv from 'dotenv';
+dotenv.config();
+import { connectToDB } from './config/db';
+connectToDB();
+
 
 const app = express();
 app.use(cors());
