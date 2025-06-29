@@ -152,7 +152,7 @@ export const getWordById = (req: Request, res: Response): void => {
 const wordStatuses: Record<string, 'mastered' | 'practice'> = {};
 
 
-export const updateWordStatus = (req: Request, res: Response): void => {
+export const updateWordStatusInMemory = (req: Request, res: Response): void => {
   const { id } = req.params;
   const { status } = req.body;
 
