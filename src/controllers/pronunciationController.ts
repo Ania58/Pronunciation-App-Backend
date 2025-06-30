@@ -70,3 +70,35 @@ export const updatePronunciationFeedback = async (req: Request, res: Response): 
     return;
   }
 };
+
+export const deletePronunciationAttempt = async (req: Request, res: Response): Promise<void> => {
+  const { id: attemptId } = req.params;
+  const { userId } = req.query;
+
+  if (!userId) {
+    res.status(400).json({ message: 'Missing userId query parameter' });
+    return;
+  }
+
+  try {
+    const attempt = await PronunciationAttemptModel.findById(attemptId);
+
+    if (!attempt) {
+      res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    if (attempt.userId !== userId) {
+      res.status(403).json({ message: 'Not authorized to delete this attempt' });
+      return;
+    }
+
+    await PronunciationAttemptModel.findByIdAndDelete(attemptId);
+    res.json({ message: 'Attempt deleted' });
+    return;
+  } catch (error) {
+    console.error('Error deleting attempt:', error);
+    res.status(500).json({ message: 'Server error' });
+    return;
+  }
+};
