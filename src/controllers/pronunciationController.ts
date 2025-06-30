@@ -46,3 +46,27 @@ export const getPronunciationAttempts = async (req: Request, res: Response): Pro
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const updatePronunciationFeedback = async (req: Request, res: Response): Promise<void> => {
+  const { id: attemptId } = req.params;
+  const { feedback, score } = req.body;
+
+  try {
+    const attempt = await PronunciationAttemptModel.findById(attemptId);
+    if (!attempt) {
+      res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    if (feedback) attempt.feedback = feedback;
+    if (score !== undefined) attempt.score = score;
+
+    await attempt.save();
+    res.json({ message: 'Feedback updated', attempt });
+    return;
+  } catch (error) {
+    console.error('Error updating feedback:', error);
+    res.status(500).json({ message: 'Server error' });
+    return;
+  }
+};
