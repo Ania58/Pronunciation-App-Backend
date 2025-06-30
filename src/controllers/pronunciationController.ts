@@ -102,3 +102,21 @@ export const deletePronunciationAttempt = async (req: Request, res: Response): P
     return;
   }
 };
+
+export const getUserPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    res.status(400).json( { message: 'Missing userId query parameter' });
+    return;
+  }
+
+  try {
+    const attempts = await PronunciationAttemptModel.find( {userId });
+    res.json(attempts);
+  } catch (error) {
+    console.error('Error fetching user pronunciation attempts: ', error);
+    res.status(500).json( { message: 'Server error' });
+    return;
+  }
+};
