@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PronunciationAttemptModel } from '../models/PronunciationAttempt';
+import fetch from 'node-fetch';
 
 export const submitPronunciationAttempt = async (req: Request, res: Response): Promise<void>   => {
   try {
@@ -118,5 +119,40 @@ export const getUserPronunciationAttempts = async (req: Request, res: Response):
     console.error('Error fetching user pronunciation attempts: ', error);
     res.status(500).json( { message: 'Server error' });
     return;
+  }
+};
+
+export const transcribePronunciation = async (req: Request, res: Response): Promise<void> => {
+  const { audioUrl } = req.body;
+
+  if (!audioUrl) {
+    res.status(400).json({ message: 'audioUrl is required' });
+    return;
+  }
+
+  try {
+    const audioResponse = await fetch(audioUrl);
+    const audioBuffer = await audioResponse.buffer();
+
+    const whisperRes = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
+        'Content-Type': 'audio/mpeg',
+      },
+      body: audioBuffer,
+    });
+
+    if (!whisperRes.ok) {
+      const errorText = await whisperRes.text();
+      throw new Error(`Whisper API error: ${errorText}`);
+    }
+
+    const result = await whisperRes.json() as { text: string };
+    res.json({ transcription: result.text });
+
+  } catch (error: any) {
+    console.error('Transcription error:', error.message);
+    res.status(500).json({ message: 'Error transcribing audio', error: error.message });
   }
 };
