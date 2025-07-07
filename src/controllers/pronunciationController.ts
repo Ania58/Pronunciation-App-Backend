@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PronunciationAttemptModel } from '../models/PronunciationAttempt';
-import fetch from 'node-fetch';
+import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const submitPronunciationAttempt = async (req: Request, res: Response): Promise<void>   => {
   try {
@@ -124,35 +126,80 @@ export const getUserPronunciationAttempts = async (req: Request, res: Response):
 
 export const transcribePronunciation = async (req: Request, res: Response): Promise<void> => {
   const { audioUrl } = req.body;
+  const { id: attemptId } = req.params;
 
   if (!audioUrl) {
     res.status(400).json({ message: 'audioUrl is required' });
     return;
   }
 
+  const assemblyApiKey = process.env.ASSEMBLYAI_API_KEY;
+  if (!assemblyApiKey) {
+    res.status(500).json({ message: 'Server misconfigured: Missing AssemblyAI key' });
+    return;
+  }
+
   try {
-    const audioResponse = await fetch(audioUrl);
-    const audioBuffer = await audioResponse.buffer();
+    console.log('[DEBUG] Sending audio to AssemblyAI:', audioUrl);
 
-    const whisperRes = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.HF_API_TOKEN}`,
-        'Content-Type': 'audio/mpeg',
-      },
-      body: audioBuffer,
-    });
+    const { data: startRes } = await axios.post(
+      'https://api.assemblyai.com/v2/transcript',
+      { audio_url: audioUrl },
+      {
+        headers: {
+          authorization: assemblyApiKey,
+          'content-type': 'application/json',
+        },
+      }
+    );
 
-    if (!whisperRes.ok) {
-      const errorText = await whisperRes.text();
-      throw new Error(`Whisper API error: ${errorText}`);
+    const transcriptId = startRes.id;
+    console.log('[DEBUG] Transcript ID:', transcriptId);
+
+    let status = 'queued';
+    let transcriptText = '';
+
+    while (status !== 'completed' && status !== 'error') {
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const { data: pollRes } = await axios.get(
+        `https://api.assemblyai.com/v2/transcript/${transcriptId}`,
+        {
+          headers: {
+            authorization: assemblyApiKey,
+          },
+        }
+      );
+
+      status = pollRes.status;
+      console.log('[DEBUG] Current status:', status);
+
+      if (status === 'completed') {
+        transcriptText = pollRes.text;
+      } else if (status === 'error') {
+        throw new Error(pollRes.error || 'Unknown AssemblyAI error');
+      }
     }
 
-    const result = await whisperRes.json() as { text: string };
-    res.json({ transcription: result.text });
+    const gentleFeedback = `Your pronunciation was transcribed as: "${transcriptText}". Great effort! Keep practicing and try to speak clearly to improve further.`;
 
-  } catch (error: any) {
-    console.error('Transcription error:', error.message);
-    res.status(500).json({ message: 'Error transcribing audio', error: error.message });
+    let updatedAttempt = null;
+    if (attemptId) {
+      updatedAttempt = await PronunciationAttemptModel.findByIdAndUpdate(
+        attemptId,
+        { feedback: gentleFeedback },
+        { new: true }
+      );
+    }
+
+    res.status(200).json({
+      transcription: transcriptText,
+      feedback: gentleFeedback,
+      ...(updatedAttempt && { updatedAttempt }),
+    });
+
+  } catch (err: any) {
+    console.error('[FATAL ERROR]', err.message || err);
+    res.status(500).json({ message: 'Transcription failed', error: err.message || err });
   }
 };
