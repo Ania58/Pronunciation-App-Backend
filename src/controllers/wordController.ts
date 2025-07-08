@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Word } from '../types/Word';
+import { WordStatus } from '../models/WordStatus';
 import { curatedWordList } from '../data/curatedWordListWithIds';
 import fullWordList from '../data/wordListWithIds.json';
 
@@ -173,9 +174,28 @@ export const updateWordStatusInMemory = (req: Request, res: Response): void => {
   res.json({ message: `Status set to '${status}' for word ${id}` });
 };
 
+export const getAllStatuses = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.query.userId as string;
 
-export const getAllStatuses = (_req: Request, res: Response): void => {
-  res.json(wordStatuses);
+  if (!userId) {
+    res.status(400).json({ message: 'Missing userId' });
+    return;
+  }
+
+  try {
+    const statuses = await WordStatus.find({ userId });
+
+    const mapped: Record<string, 'mastered' | 'practice'> = {};
+    for (const entry of statuses) {
+      mapped[entry.wordId] = entry.status;
+    }
+
+    res.json(mapped);
+  } catch (error) {
+    console.error('Error fetching statuses:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
+
 
 
