@@ -58,3 +58,26 @@ export const getAllStatuses = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const deleteWordStatus = async (req: Request, res: Response): Promise<void> => {
+  const { id: wordId } = req.params;
+  const { userId } = req.query;
+
+  if (!userId || typeof userId !== 'string') {
+    res.status(400).json({ message: 'Missing or invalid userId' });
+    return;
+  }
+
+  try {
+    const deleted = await WordStatus.findOneAndDelete({ wordId, userId });
+    if (!deleted) {
+      res.status(404).json({ message: 'Status not found' });
+      return;
+    }
+
+    res.json({ message: `Status for word ${wordId} deleted` });
+  } catch (error) {
+    console.error('Error deleting status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

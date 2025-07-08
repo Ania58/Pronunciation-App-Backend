@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getSampleWords, getAllWords, getWordByText, searchWords, getRandomWord, getWordById  } from '../controllers/wordController';
-import { updateWordStatus, getAllStatuses } from '../controllers/wordStatusController'; 
+import { updateWordStatus, getAllStatuses, deleteWordStatus } from '../controllers/wordStatusController'; 
 
 
 const router = Router();
@@ -11,6 +11,7 @@ router.get('/search', searchWords);
 router.get('/random', getRandomWord);
 router.get('/statuses', getAllStatuses);
 router.post('/:id/status', updateWordStatus);
+router.delete('/:id/status', deleteWordStatus);
 router.get('/id/:id', getWordById);
 router.get('/:word', getWordByText);
 
