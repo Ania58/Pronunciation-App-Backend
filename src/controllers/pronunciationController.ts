@@ -4,6 +4,16 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
+
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
+  api_key: process.env.CLOUDINARY_API_KEY || '',
+  api_secret: process.env.CLOUDINARY_API_SECRET || '',
+});
+
+
 export const submitPronunciationAttempt = async (req: Request, res: Response): Promise<void>   => {
   try {
     const { userId, wordId, audioUrl, score, feedback } = req.body;
@@ -74,12 +84,13 @@ export const updatePronunciationFeedback = async (req: Request, res: Response): 
   }
 };
 
+
 export const deletePronunciationAttempt = async (req: Request, res: Response): Promise<void> => {
   const { id: attemptId } = req.params;
   const { userId } = req.query;
 
-  if (!userId) {
-    res.status(400).json({ message: 'Missing userId query parameter' });
+  if (!userId || typeof userId !== 'string') {
+    res.status(400).json({ message: 'Missing or invalid userId query parameter' });
     return;
   }
 
@@ -96,15 +107,27 @@ export const deletePronunciationAttempt = async (req: Request, res: Response): P
       return;
     }
 
+    const url = attempt.audioUrl;
+    const fileNameWithExt = url.split('/').pop(); 
+    const fileName = fileNameWithExt?.split('.')[0]; 
+    const publicId = `audios/${fileName}`;
+
+    try {
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
+      console.log(`[CLOUDINARY] Deleted: ${publicId}`);
+    } catch (cloudErr) {
+      console.warn(`[CLOUDINARY] Failed to delete ${publicId}:`, cloudErr);
+    }
+
     await PronunciationAttemptModel.findByIdAndDelete(attemptId);
-    res.json({ message: 'Attempt deleted' });
-    return;
+
+    res.json({ message: 'Attempt and audio deleted' });
   } catch (error) {
     console.error('Error deleting attempt:', error);
     res.status(500).json({ message: 'Server error' });
-    return;
   }
 };
+
 
 export const getUserPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.query;
