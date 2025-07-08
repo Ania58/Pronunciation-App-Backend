@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Word } from '../types/Word';
-import { WordStatus } from '../models/WordStatus';
 import { curatedWordList } from '../data/curatedWordListWithIds';
 import fullWordList from '../data/wordListWithIds.json';
 
@@ -150,52 +149,9 @@ export const getWordById = (req: Request, res: Response): void => {
   });
 };
 
-const wordStatuses: Record<string, 'mastered' | 'practice'> = {};
 
 
-export const updateWordStatusInMemory = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const { status } = req.body;
 
-  if (!['mastered', 'practice'].includes(status)) {
-    res.status(400).json({ message: 'Invalid status value' });
-    return;
-  }
-
-  const allWords = [...curatedWordList, ...(fullWordList as Word[])];
-  const exists = allWords.find((entry) => entry.id === id);
-
-  if (!exists) {
-    res.status(404).json({ message: 'Word not found' });
-    return;
-  }
-
-  wordStatuses[id] = status;
-  res.json({ message: `Status set to '${status}' for word ${id}` });
-};
-
-export const getAllStatuses = async (req: Request, res: Response): Promise<void> => {
-  const userId = req.query.userId as string;
-
-  if (!userId) {
-    res.status(400).json({ message: 'Missing userId' });
-    return;
-  }
-
-  try {
-    const statuses = await WordStatus.find({ userId });
-
-    const mapped: Record<string, 'mastered' | 'practice'> = {};
-    for (const entry of statuses) {
-      mapped[entry.wordId] = entry.status;
-    }
-
-    res.json(mapped);
-  } catch (error) {
-    console.error('Error fetching statuses:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
 
 
 

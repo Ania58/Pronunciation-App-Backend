@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getSampleWords, getAllWords, getWordByText, searchWords, getRandomWord, getWordById, updateWordStatusInMemory, getAllStatuses } from '../controllers/wordController';
-import { updateWordStatus } from '../controllers/wordStatusController'; 
+import { getSampleWords, getAllWords, getWordByText, searchWords, getRandomWord, getWordById  } from '../controllers/wordController';
+import { updateWordStatus, getAllStatuses } from '../controllers/wordStatusController'; 
 
 
 const router = Router();
