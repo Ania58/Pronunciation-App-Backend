@@ -6,7 +6,8 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 import { getFeedbackFromGPT } from '../services/gptFeedback';
-
+import { scorePronunciation } from '../utils/scorePronunciation'; 
+import { PronunciationAttempt } from '../models/PronunciationAttempt';
 
 
 import { v2 as cloudinary } from 'cloudinary';
@@ -225,6 +226,8 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       console.warn(`[WARNING] No word entry found for ID: ${wordId}`);
     }
 
+    const score = scorePronunciation(expectedWord, transcriptText); 
+
     const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText });
 
     let finalFeedback = gptFeedback;
@@ -249,11 +252,11 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     }
 
 
-    let updatedAttempt = null;
+    let updatedAttempt : PronunciationAttempt | null = null;
     if (attemptId) {
       updatedAttempt = await PronunciationAttemptModel.findByIdAndUpdate(
         attemptId,
-        { feedback: finalFeedback },
+        { feedback: finalFeedback, score },
         { new: true }
       );
     }
@@ -261,6 +264,7 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     res.status(200).json({
       transcription: transcriptText,
       feedback: finalFeedback,
+      score,
       ...(updatedAttempt && { updatedAttempt }),
     });
 
