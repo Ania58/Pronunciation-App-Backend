@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
 import { PronunciationAttemptModel } from '../models/PronunciationAttempt';
+import fullWordList from '../data/wordListWithIds.json';
+import { curatedWordList } from '../data/curatedWordListWithIds';
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
+import { getFeedbackFromGPT } from '../services/gptFeedback';
+
 
 
 import { v2 as cloudinary } from 'cloudinary';
@@ -204,20 +208,59 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       }
     }
 
-    const gentleFeedback = `Your pronunciation was transcribed as: "${transcriptText}". Great effort! Keep practicing and try to speak clearly to improve further.`;
+    const attempt = await PronunciationAttemptModel.findById(attemptId);
+    if (!attempt) {
+      res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    console.log('Attempt wordId:', attempt.wordId);
+
+    const wordId = attempt.wordId;
+
+    const wordEntry = (fullWordList as any[]).find(w => w.id === wordId) || (curatedWordList as any[]).find(w => w.id === wordId);
+    const expectedWord = wordEntry?.word || '[missing word]';
+
+    if (!wordEntry) {
+      console.warn(`[WARNING] No word entry found for ID: ${wordId}`);
+    }
+
+    const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText });
+
+    let finalFeedback = gptFeedback;
+
+    if (!finalFeedback) {
+      const cleanTranscript = transcriptText?.toLowerCase().trim();
+      const cleanExpected = expectedWord?.toLowerCase().trim();
+
+      finalFeedback = `Your pronunciation was transcribed as: "${cleanTranscript}"\nExpected word: "${cleanExpected}".\n\n`;
+
+      if (cleanTranscript === cleanExpected) {
+        finalFeedback += `✅ Excellent! Your pronunciation matches the target word. Great job!`;
+      } else if (cleanTranscript.length === cleanExpected.length) {
+        finalFeedback += `🧐 Very close! You might have minor pronunciation differences. Try to articulate each sound clearly.`;
+      } else if (cleanTranscript.startsWith(cleanExpected[0])) {
+        finalFeedback += `👂 It seems you're on the right track. Focus on finishing the word with clarity and confidence.`;
+      } else {
+        finalFeedback += `❗The beginning of the word differs. Practice starting with the correct sound — especially the initial consonants.`;
+      }
+
+      finalFeedback += `\n\nKeep practicing — you're improving with every attempt! 🎯`;
+    }
+
 
     let updatedAttempt = null;
     if (attemptId) {
       updatedAttempt = await PronunciationAttemptModel.findByIdAndUpdate(
         attemptId,
-        { feedback: gentleFeedback },
+        { feedback: finalFeedback },
         { new: true }
       );
     }
 
     res.status(200).json({
       transcription: transcriptText,
-      feedback: gentleFeedback,
+      feedback: finalFeedback,
       ...(updatedAttempt && { updatedAttempt }),
     });
 
