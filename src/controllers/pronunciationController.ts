@@ -28,6 +28,22 @@ export const submitPronunciationAttempt = async (req: Request, res: Response): P
       return; 
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+
+    const attemptsToday = await PronunciationAttemptModel.countDocuments({
+      userId,
+      createdAt: { $gte: today },
+    });
+
+    const DAILY_LIMIT = 20;
+    if (attemptsToday >= DAILY_LIMIT) {
+      res
+        .status(429)
+        .json({ message: `Daily limit of ${DAILY_LIMIT} attempts reached. Try again tomorrow.` });
+      return;
+    }
+
     const newAttempt = new PronunciationAttemptModel({
       userId,
       wordId,
