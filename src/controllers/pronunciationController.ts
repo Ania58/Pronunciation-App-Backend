@@ -245,14 +245,14 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     const score = scorePronunciation(expectedWord, transcriptText); 
 
     const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText });
-
+    
     let finalFeedback = gptFeedback;
 
     if (!finalFeedback) {
-      const cleanTranscript = transcriptText?.toLowerCase().trim();
-      const cleanExpected = expectedWord?.toLowerCase().trim();
+      const cleanTranscript = transcriptText?.toLowerCase().replace(/[^\w\s]|_/g, '').trim();
+      const cleanExpected = expectedWord?.toLowerCase().replace(/[^\w\s]|_/g, '').trim();
 
-      finalFeedback = `Your pronunciation was transcribed as: "${cleanTranscript}"\nExpected word: "${cleanExpected}".\n\n`;
+      finalFeedback = `Your pronunciation was transcribed as: "${cleanTranscript}".\nExpected word: "${cleanExpected}".\n\n`;
 
       if (cleanTranscript === cleanExpected) {
         finalFeedback += `✅ Excellent! Your pronunciation matches the target word. Great job!`;
