@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const sendContactMessage = async (req: Request, res: Response): Promise<void> => {
-  const { name, subject, message } = req.body;
+  const { name, email, subject, message } = req.body;
 
   if (!name || !subject || !message) {
      res.status(400).json({ message: 'All fields are required.' });
@@ -26,6 +26,7 @@ export const sendContactMessage = async (req: Request, res: Response): Promise<v
       to: process.env.EMAIL_TO,
       subject: `[SayRight] ${subject}`,
       text: `From: ${name}\n\nMessage:\n${message}`,
+      replyTo: email,
     });
 
     res.status(200).json({ message: 'Message sent successfully.' });
