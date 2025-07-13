@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import wordRoutes from './routes/wordRoutes';
 import pronunciationRoutes from './routes/pronunciationRoutes';
+import contactRoutes from './routes/contactRoutes';
 import dotenv from 'dotenv';
 import cloudinarySignatureRoutes from './routes/cloudinarySignature';
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api/words', wordRoutes);
 app.use('/api/pronunciation', pronunciationRoutes);
 app.use('/api/cloudinary', cloudinarySignatureRoutes);
+app.use('/api', contactRoutes);
 
 
 app.use((req, res) => {
