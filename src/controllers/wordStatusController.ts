@@ -1,18 +1,20 @@
 import { Request, Response } from 'express';
 import { WordStatus } from '../models/WordStatus';
+import { AuthenticatedRequest } from '../middleware/verifyToken';
 
-export const updateWordStatus = async (req: Request, res: Response): Promise<void>  => {
+export const updateWordStatus = async (req: Request, res: Response): Promise<void> => {
   const { id: wordId } = req.params;
-  const { status, userId } = req.body;
+  const { status } = req.body;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
   if (!['mastered', 'practice'].includes(status)) {
-     res.status(400).json({ message: 'Invalid status value' });
-     return;
+    res.status(400).json({ message: 'Invalid status value' });
+    return;
   }
 
   if (!userId) {
-    res.status(400).json({ message: 'Missing userId' });
-    return; 
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
   }
 
   try {
@@ -22,25 +24,22 @@ export const updateWordStatus = async (req: Request, res: Response): Promise<voi
       existing.status = status;
       await existing.save();
       res.json({ message: 'Status updated', wordId, status });
-      return; 
     } else {
       const newStatus = new WordStatus({ wordId, userId, status });
       await newStatus.save();
-       res.status(201).json({ message: 'Status created', wordId, status });
-       return;
+      res.status(201).json({ message: 'Status created', wordId, status });
     }
   } catch (error) {
     console.error('Error updating status:', error);
     res.status(500).json({ message: 'Server error' });
-    return; 
   }
 };
 
 export const getAllStatuses = async (req: Request, res: Response): Promise<void> => {
-  const userId = req.query.userId as string;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
   if (!userId) {
-    res.status(400).json({ message: 'Missing userId' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -61,10 +60,10 @@ export const getAllStatuses = async (req: Request, res: Response): Promise<void>
 
 export const deleteWordStatus = async (req: Request, res: Response): Promise<void> => {
   const { id: wordId } = req.params;
-  const { userId } = req.query;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
-  if (!userId || typeof userId !== 'string') {
-    res.status(400).json({ message: 'Missing or invalid userId' });
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -81,3 +80,4 @@ export const deleteWordStatus = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Server error' });
   }
 };
+
