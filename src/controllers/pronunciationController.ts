@@ -236,11 +236,15 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     const wordId = attempt.wordId;
 
     const wordEntry = (fullWordList as any[]).find(w => w.id === wordId) || (curatedWordList as any[]).find(w => w.id === wordId);
-    const expectedWord = wordEntry?.word || '[missing word]';
-
+   
     if (!wordEntry) {
       console.warn(`[WARNING] No word entry found for ID: ${wordId}`);
+      res.status(404).json({ message: `No matching word found for wordId: ${wordId}` });
+      return;
     }
+
+    const expectedWord = wordEntry.word;
+
 
     const score = scorePronunciation(expectedWord, transcriptText); 
 
