@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { submitPronunciationAttempt, getPronunciationAttempts, updatePronunciationFeedback, deletePronunciationAttempt, getUserPronunciationAttempts,  transcribePronunciation } from '../controllers/pronunciationController';
+import { verifyToken } from '../middleware/verifyToken';
 
 const router = Router();
 
-router.get('/user/attempts', getUserPronunciationAttempts);
-router.post('/:id', submitPronunciationAttempt);
-router.get('/:id/attempts', getPronunciationAttempts);
-router.patch('/:id/feedback', updatePronunciationFeedback);
-router.delete('/:id', deletePronunciationAttempt);
-router.post('/:id/transcribe', transcribePronunciation);
+router.get('/user/attempts', verifyToken, getUserPronunciationAttempts);
+router.post('/:id', verifyToken, submitPronunciationAttempt);
+router.get('/:id/attempts', verifyToken, getPronunciationAttempts);
+router.patch('/:id/feedback', verifyToken, updatePronunciationFeedback);
+router.delete('/:id', verifyToken, deletePronunciationAttempt);
+router.post('/:id/transcribe', verifyToken, transcribePronunciation);
 
 
 

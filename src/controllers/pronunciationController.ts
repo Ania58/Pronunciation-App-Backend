@@ -8,6 +8,7 @@ dotenv.config();
 import { getFeedbackFromGPT } from '../services/gptFeedback';
 import { scorePronunciation } from '../utils/scorePronunciation'; 
 import { PronunciationAttempt } from '../models/PronunciationAttempt';
+import { AuthenticatedRequest } from '../middleware/verifyToken';
 
 
 import { v2 as cloudinary } from 'cloudinary';
@@ -21,10 +22,16 @@ cloudinary.config({
 
 export const submitPronunciationAttempt = async (req: Request, res: Response): Promise<void>   => {
   try {
-    const { userId, wordId, audioUrl, score, feedback } = req.body;
+    const { wordId, audioUrl, score, feedback } = req.body;
+    const userId = (req as AuthenticatedRequest).user?.uid;
 
-    if (!userId || !wordId || !audioUrl) {
-      res.status(400).json({ message: 'userId, wordId, and audioUrl are required' });
+    if (!wordId || !audioUrl) {
+      res.status(400).json({ message: 'wordId, and audioUrl are required' });
+      return; 
+    }
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized: No user ID found' });
       return; 
     }
 
@@ -65,10 +72,10 @@ export const submitPronunciationAttempt = async (req: Request, res: Response): P
 
 export const getPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
   const { id: wordId } = req.params;
-  const { userId } = req.query;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
   if (!userId) {
-    res.status(400).json({ message: 'Missing userId query parameter' });
+    res.status(401).json({ message: 'Unauthorized: No user ID found' });
     return;
   }
 
@@ -84,11 +91,22 @@ export const getPronunciationAttempts = async (req: Request, res: Response): Pro
 export const updatePronunciationFeedback = async (req: Request, res: Response): Promise<void> => {
   const { id: attemptId } = req.params;
   const { feedback, score } = req.body;
+  const userId = (req as AuthenticatedRequest).user?.uid;
+
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized: No user ID found' });
+    return;
+  }
 
   try {
     const attempt = await PronunciationAttemptModel.findById(attemptId);
     if (!attempt) {
       res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    if (attempt.userId !== userId) {
+      res.status(403).json({ message: 'Not authorized to update this attempt' });
       return;
     }
 
@@ -108,10 +126,10 @@ export const updatePronunciationFeedback = async (req: Request, res: Response): 
 
 export const deletePronunciationAttempt = async (req: Request, res: Response): Promise<void> => {
   const { id: attemptId } = req.params;
-  const { userId } = req.query;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
-  if (!userId || typeof userId !== 'string') {
-    res.status(400).json({ message: 'Missing or invalid userId query parameter' });
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized: No user ID found' });
     return;
   }
 
@@ -151,10 +169,10 @@ export const deletePronunciationAttempt = async (req: Request, res: Response): P
 
 
 export const getUserPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.query;
+  const userId = (req as AuthenticatedRequest).user?.uid;
 
   if (!userId) {
-    res.status(400).json( { message: 'Missing userId query parameter' });
+    res.status(401).json( { message: 'Unauthorized: No user ID found' });
     return;
   }
 
@@ -171,6 +189,12 @@ export const getUserPronunciationAttempts = async (req: Request, res: Response):
 export const transcribePronunciation = async (req: Request, res: Response): Promise<void> => {
   const { audioUrl } = req.body;
   const { id: attemptId } = req.params;
+  const userId = (req as AuthenticatedRequest).user?.uid;
+
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized: No user ID found' });
+    return;
+  }
 
   if (!audioUrl) {
     res.status(400).json({ message: 'audioUrl is required' });
@@ -228,6 +252,11 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     const attempt = await PronunciationAttemptModel.findById(attemptId);
     if (!attempt) {
       res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    if (attempt.userId !== userId) {
+      res.status(403).json({ message: 'Not authorized to transcribe this attempt' });
       return;
     }
 
