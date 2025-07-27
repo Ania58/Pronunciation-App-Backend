@@ -6,8 +6,8 @@
     "dev": "nodemon --exec ts-node src/index.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Anna Heliasz",
+  "license": "UNLICENSED",
   "description": "",
   "dependencies": {
     "axios": "^1.10.0",
