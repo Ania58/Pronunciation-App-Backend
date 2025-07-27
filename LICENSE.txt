@@ -1,0 +1,11 @@
+Copyright © 2025 Anna Heliasz. All rights reserved.
+
+This software and associated files are the proprietary and confidential property of Anna Heliasz (“the Author”).
+
+Unauthorized copying, modification, distribution, or use of this software, in whole or in part, is strictly prohibited without the express written consent of the Author.
+
+This project is provided solely for personal, educational, or demonstration purposes. It is not open source and may not be reused in commercial or public applications.
+
+By accessing this codebase, you agree not to use, reproduce, or distribute it for any purpose beyond individual review, unless explicitly authorized in writing by the Author.
+
+For licensing inquiries, contact: [annemaryheliasz@gmail.com]
