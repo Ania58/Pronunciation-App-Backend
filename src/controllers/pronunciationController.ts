@@ -70,6 +70,7 @@ export const submitPronunciationAttempt = async (req: Request, res: Response): P
   }
 };
 
+
 export const getPronunciationAttempts = async (req: Request, res: Response): Promise<void> => {
   const { id: wordId } = req.params;
   const userId = (req as AuthenticatedRequest).user?.uid;
@@ -79,14 +80,47 @@ export const getPronunciationAttempts = async (req: Request, res: Response): Pro
     return;
   }
 
+  type WordEntry = {
+    id?: string;
+    word?: string;
+    [key: string]: any;
+  };
+
+  const fullList: WordEntry[] = Array.isArray(fullWordList)
+    ? fullWordList
+    : Object.values(fullWordList);
+
+  const curatedList: WordEntry[] = Object.values(curatedWordList).flat();
+
+  const allWords: WordEntry[] = [...fullList, ...curatedList];
+
+  const wordEntry = allWords.find((w) => w?.id === wordId);
+
+  if (!wordEntry || typeof wordEntry.word !== 'string') {
+    res.status(404).json({ message: `Word not found for ID: ${wordId}` });
+    return;
+  }
+
+  const wordText = wordEntry.word;
+
+  const matchingWordIds = allWords
+    .filter((w) => w?.word === wordText)
+    .map((w) => w?.id)
+    .filter((id): id is string => typeof id === 'string');
+
   try {
-    const attempts = await PronunciationAttemptModel.find({ wordId, userId });
+    const attempts = await PronunciationAttemptModel.find({
+      userId,
+      wordId: { $in: matchingWordIds },
+    });
+
     res.json(attempts);
   } catch (error) {
     console.error('Error fetching pronunciation attempts:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 export const updatePronunciationFeedback = async (req: Request, res: Response): Promise<void> => {
   const { id: attemptId } = req.params;
