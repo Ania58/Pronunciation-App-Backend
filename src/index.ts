@@ -5,6 +5,7 @@ import pronunciationRoutes from './routes/pronunciationRoutes';
 import contactRoutes from './routes/contactRoutes';
 import dotenv from 'dotenv';
 import cloudinarySignatureRoutes from './routes/cloudinarySignature';
+import userRoutes from './routes/userRoutes';
 dotenv.config();
 import { connectToDB } from './config/db';
 connectToDB();
@@ -18,6 +19,7 @@ app.use('/api/words', wordRoutes);
 app.use('/api/pronunciation', pronunciationRoutes);
 app.use('/api/cloudinary', cloudinarySignatureRoutes);
 app.use('/api', contactRoutes);
+app.use('/api/users', userRoutes);
 
 
 app.use((req, res) => {
