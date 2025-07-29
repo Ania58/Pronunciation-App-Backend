@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
+console.log("FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
 
 export const firebaseServiceAccount = {
   type: process.env.FIREBASE_TYPE,
