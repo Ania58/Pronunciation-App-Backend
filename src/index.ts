@@ -21,6 +21,10 @@ app.use('/api/cloudinary', cloudinarySignatureRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/users', userRoutes);
 
+app.get('/', (req, res) => {
+  res.status(200).send('Backend is running');
+});
+
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
