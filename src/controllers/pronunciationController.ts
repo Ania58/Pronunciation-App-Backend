@@ -308,6 +308,20 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
 
     const expectedWord = wordEntry.word;
 
+    const equivalents: Record<string, string> = {
+      r: 'are',
+      u: 'you',
+      2: 'to',
+      4: 'for'
+    };
+
+    const normalizedTranscript = transcriptText.trim().toLowerCase();
+    const normalizedExpected = expectedWord.trim().toLowerCase();
+
+    if (equivalents[normalizedTranscript] === normalizedExpected) {
+      console.log(`[EQUIVALENT MATCH] Replacing "${transcriptText}" with "${expectedWord}"`);
+      transcriptText = expectedWord;
+    }
 
     let score = scorePronunciation(expectedWord, transcriptText); 
 
