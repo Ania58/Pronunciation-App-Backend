@@ -4,8 +4,9 @@ export function scorePronunciation(
   expected: string,
   transcript: string,
 ): number {
-  const cleanA = expected.trim().toLowerCase();
-  const cleanB = transcript.trim().toLowerCase();
+ 
+  const cleanA = expected.trim().toLowerCase().replace(/[^\w\s']/g, '');
+  const cleanB = transcript.trim().toLowerCase().replace(/[^\w\s']/g, '');
 
   const similarity = stringSimilarity.compareTwoStrings(cleanA, cleanB);
 
