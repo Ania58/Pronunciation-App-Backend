@@ -315,10 +315,19 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
 
     console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
 
+    const functionWords = [
+      'are', 'or', 'am', 'is', 'the', 'a', 'an', 'was', 'were',
+      'do', 'does', 'did', 'of', 'to', 'in', 'on', 'at', 'it', 'as',
+      'be', 'he', 'she', 'we', 'they', 'i', 'you', 'me', 'my', 'so', 'by',
+      'if', 'and', 'but', 'with', 'for', 'from'
+    ];
+
+    const isShortFunctionWord = functionWords.includes(expectedWord.toLowerCase());
+
     if (transcriptText?.length > 0 && score === 0) {
-      score = 3; 
+      score = isShortFunctionWord ? 6 : 3;
     }
-    
+
     let finalFeedback = gptFeedback;
 
     if (!finalFeedback) {
