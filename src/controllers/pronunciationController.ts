@@ -309,9 +309,15 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     const expectedWord = wordEntry.word;
 
 
-    const score = scorePronunciation(expectedWord, transcriptText); 
+    let score = scorePronunciation(expectedWord, transcriptText); 
 
     const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText });
+
+    console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
+
+    if (transcriptText?.length > 0 && score === 0) {
+      score = 3; 
+    }
     
     let finalFeedback = gptFeedback;
 
