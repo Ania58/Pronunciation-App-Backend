@@ -312,7 +312,12 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       r: 'are',
       u: 'you',
       2: 'to',
-      4: 'for'
+      4: 'for',
+      y: 'why',
+      c: 'see',
+      b: 'be',
+      k: 'okay',
+      n: 'and'
     };
 
     const rawTranscript = transcriptText || '';
