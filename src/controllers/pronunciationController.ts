@@ -315,7 +315,8 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       4: 'for'
     };
 
-    const normalizedTranscript = transcriptText.trim().toLowerCase();
+    const rawTranscript = transcriptText || '';
+    const normalizedTranscript = rawTranscript.trim().toLowerCase().replace(/[^\w\s']/g, '');
     const normalizedExpected = expectedWord.trim().toLowerCase();
 
     if (equivalents[normalizedTranscript] === normalizedExpected) {
