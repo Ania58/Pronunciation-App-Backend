@@ -326,7 +326,7 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
 
     let score = scorePronunciation(expectedWord, transcriptText); 
 
-    const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText });
+    const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText, score });
 
     console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
 
