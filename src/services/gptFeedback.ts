@@ -10,9 +10,13 @@ export const getFeedbackFromGPT = async ({
   score: number;
 }) => {
   try {
-    const prompt = `A student attempted to pronounce the word "${word}". The AI transcribed it as "${transcription}". The pronunciation score is ${score}/10.
+    const formatWordForPrompt = (word: string) => {
+      return word.startsWith("'") ? word : `"${word}"`;
+    };
 
-    Give short, encouraging feedback (max 2–3 sentences). Mention the word "${word}", and adjust your tone based on the score:
+    const prompt = `A student attempted to pronounce the word ${formatWordForPrompt(word)}. The AI transcribed it as ${formatWordForPrompt(transcription)}. The pronunciation score is ${score}/10.
+
+    Give short, encouraging feedback (max 2–3 sentences). Mention the word ${formatWordForPrompt(word)}, and adjust your tone based on the score:
     - If the score is 9 or 10, praise the student with enthusiasm.
     - If the score is 6–8, mention it's good but could be improved slightly.
     - If the score is below 6, point out one helpful improvement.
