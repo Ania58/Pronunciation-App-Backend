@@ -244,9 +244,41 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
   try {
     console.log('[DEBUG] Sending audio to AssemblyAI:', audioUrl);
 
+    
+    const attempt = await PronunciationAttemptModel.findById(attemptId);
+    if (!attempt) {
+      res.status(404).json({ message: 'Attempt not found' });
+      return;
+    }
+
+    if (attempt.userId !== userId) {
+      res.status(403).json({ message: 'Not authorized to transcribe this attempt' });
+      return;
+    }
+
+    console.log('Attempt wordId:', attempt.wordId);
+
+    const wordId = attempt.wordId;
+
+    const wordEntry = (fullWordList as any[]).find(w => w.id === wordId) || (curatedWordList as any[]).find(w => w.id === wordId);
+   
+    if (!wordEntry) {
+      console.warn(`[WARNING] No word entry found for ID: ${wordId}`);
+      res.status(404).json({ message: `No matching word found for wordId: ${wordId}` });
+      return;
+    }
+
+    const expectedWord = wordEntry.word;
+
     const { data: startRes } = await axios.post(
       'https://api.assemblyai.com/v2/transcript',
-      { audio_url: audioUrl },
+      { 
+        audio_url: audioUrl, 
+        word_boost: [expectedWord],
+        boost_param: "high",
+        disfluencies: false, 
+        punctuate: false  
+      },
       {
         headers: {
           authorization: assemblyApiKey,
@@ -282,31 +314,6 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
         throw new Error(pollRes.error || 'Unknown AssemblyAI error');
       }
     }
-
-    const attempt = await PronunciationAttemptModel.findById(attemptId);
-    if (!attempt) {
-      res.status(404).json({ message: 'Attempt not found' });
-      return;
-    }
-
-    if (attempt.userId !== userId) {
-      res.status(403).json({ message: 'Not authorized to transcribe this attempt' });
-      return;
-    }
-
-    console.log('Attempt wordId:', attempt.wordId);
-
-    const wordId = attempt.wordId;
-
-    const wordEntry = (fullWordList as any[]).find(w => w.id === wordId) || (curatedWordList as any[]).find(w => w.id === wordId);
-   
-    if (!wordEntry) {
-      console.warn(`[WARNING] No word entry found for ID: ${wordId}`);
-      res.status(404).json({ message: `No matching word found for wordId: ${wordId}` });
-      return;
-    }
-
-    const expectedWord = wordEntry.word;
 
     const equivalents: Record<string, string> = {
       r: 'are',
