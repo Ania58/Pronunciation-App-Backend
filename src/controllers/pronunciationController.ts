@@ -336,9 +336,30 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       transcriptText = expectedWord;
     }
 
-    let score = scorePronunciation(expectedWord, transcriptText); 
+    function findHomophones(phonetic: string, excludeWord: string): string[] {
+      return (fullWordList as any[])
+        .filter(entry => entry.phonetic === phonetic && entry.word.toLowerCase() !== excludeWord.toLowerCase())
+        .map(entry => entry.word.toLowerCase());
+    }
 
-    const gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText, score });
+    const expectedPhonetic = wordEntry.phonetic;
+    let isHomophoneMatch = false;
+
+    if (expectedPhonetic) {
+      const homophones = findHomophones(expectedPhonetic, expectedWord);
+      if (homophones.includes(normalizedTranscript)) {
+        isHomophoneMatch = true;
+        console.log(`[HOMOPHONE MATCH] "${normalizedTranscript}" is a homophone of "${expectedWord}"`);
+      }
+    }
+
+
+    let score = isHomophoneMatch
+      ? 9
+      : scorePronunciation(expectedWord, transcriptText);
+
+
+    let gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText, score });
 
     console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
 
@@ -353,6 +374,10 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
 
     if (transcriptText?.length > 0 && score === 0) {
       score = isShortFunctionWord ? 6 : 3;
+    }
+
+    if (isHomophoneMatch && !gptFeedback?.includes('homophone')) {
+      gptFeedback += `\n💡 Note: Your pronunciation matches a homophone of "${expectedWord}". While the spelling differs, your pronunciation was correct!`;
     }
 
     let finalFeedback = gptFeedback;
