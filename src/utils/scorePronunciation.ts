@@ -8,10 +8,18 @@ interface WordEntry {
   ipa?: string;
 }
 
+function normalizeWordForComparison(word: string): string {
+  return word.trim().toLowerCase().replace(/[^\w]/g, '');
+}
+
 function findWordEntryByWord(word: string): WordEntry | undefined {
+  const normalized = normalizeWordForComparison(word);
   const allCurated = Object.values(curatedWordList).flat();
   const allWords = [...(fullWordList as WordEntry[]), ...allCurated];
-  return allWords.find((entry) => entry.word?.toLowerCase() === word.toLowerCase());
+
+  return allWords.find((entry) => 
+    normalizeWordForComparison(entry.word) === normalized
+  );
 }
 
 export function scorePronunciation(expected: string, transcript: string): number {
