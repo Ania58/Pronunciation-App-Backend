@@ -22,7 +22,7 @@ function findWordEntryByWord(word: string): WordEntry | undefined {
   );
 }
 
-export function scorePronunciation(expected: string, transcript: string): number {
+export function scorePronunciation(expected: string, transcript: string, isShortFunctionWord: boolean = false): number {
   const cleanExpected = expected.trim().toLowerCase().replace(/['’]/g, '');
   const cleanTranscript = transcript.trim().toLowerCase().replace(/['’]/g, '');
 
@@ -48,6 +48,15 @@ export function scorePronunciation(expected: string, transcript: string): number
     if (ipaSimilarity >= 0.6) return 6;
     if (ipaSimilarity >= 0.45) return 4;
     if (ipaSimilarity >= 0.3) return 2;
+    if (transcript.trim().length > 0 && isShortFunctionWord) {
+      console.log('[SCORING] IPA similarity too low, applying fallback for short function word');
+      return 6;
+    }
+    if (transcript.trim().length > 0) {
+      console.log('[SCORING] IPA similarity too low, applying fallback score');
+      return 3;
+    }
+
     return 1;
   }
 

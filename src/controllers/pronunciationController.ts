@@ -356,16 +356,6 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       }
     }
 
-
-    let score = isHomophoneMatch
-      ? 9
-      : scorePronunciation(expectedWord, transcriptText);
-
-
-    let gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText, score });
-
-    console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
-
     const functionWords = [
       'are', 'or', 'am', 'is', 'the', 'a', 'an', 'was', 'were',
       'do', 'does', 'did', 'of', 'to', 'in', 'on', 'at', 'it', 'as',
@@ -375,9 +365,19 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
 
     const isShortFunctionWord = functionWords.includes(expectedWord.toLowerCase());
 
+    let score = isHomophoneMatch
+      ? 9
+      : scorePronunciation(expectedWord, transcriptText, isShortFunctionWord);
+
+
     if (transcriptText?.length > 0 && score === 0) {
       score = isShortFunctionWord ? 6 : 3;
     }
+
+    let gptFeedback = await getFeedbackFromGPT({ word: expectedWord, transcription: transcriptText, score });
+
+    console.log(`[TRANSCRIPTION DEBUG] Expected: "${expectedWord}", Transcribed: "${transcriptText}"`);
+
 
     if (isHomophoneMatch && !gptFeedback?.includes('homophone')) {
       gptFeedback += `\n💡 Note: Your pronunciation matches a homophone of "${transcriptText}". While the spelling differs, your pronunciation was correct!`;
