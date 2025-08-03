@@ -380,7 +380,7 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     }
 
     if (isHomophoneMatch && !gptFeedback?.includes('homophone')) {
-      gptFeedback += `\n💡 Note: Your pronunciation matches a homophone of "${expectedWord}". While the spelling differs, your pronunciation was correct!`;
+      gptFeedback += `\n💡 Note: Your pronunciation matches a homophone of "${transcriptText}". While the spelling differs, your pronunciation was correct!`;
     }
 
     let finalFeedback = gptFeedback;
