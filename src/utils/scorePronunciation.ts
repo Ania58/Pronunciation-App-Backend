@@ -18,8 +18,11 @@ export function scorePronunciation(expected: string, transcript: string): number
   const cleanExpected = expected.trim().toLowerCase().replace(/[^\w\s'-]/g, '');
   const cleanTranscript = transcript.trim().toLowerCase().replace(/[^\w\s'-]/g, '');
 
-  const expectedEntry = findWordEntryByWord(cleanExpected);
-  const transcriptEntry = findWordEntryByWord(cleanTranscript);
+  const expectedEntry = findWordEntryByWord(expected.trim().toLowerCase());
+  const transcriptEntry = findWordEntryByWord(transcript.trim().toLowerCase());
+
+  console.log('[SCORING] Lookup ExpectedEntry:', expectedEntry?.word || '—');
+  console.log('[SCORING] Lookup TranscriptEntry:', transcriptEntry?.word || '—');
 
   const ipaA = expectedEntry?.ipa?.replace(/[\/ˈˌ]/g, '').trim();
   const ipaB = transcriptEntry?.ipa?.replace(/[\/ˈˌ]/g, '').trim();
@@ -49,6 +52,6 @@ export function scorePronunciation(expected: string, transcript: string): number
   if (fallbackSim >= 0.65) return 6;
   if (fallbackSim >= 0.5) return 5;
   if (fallbackSim >= 0.3) return 3;
-  if (fallbackSim > 0) return 1;
+  if (fallbackSim > 0.15) return 1;
   return 0;
 }
