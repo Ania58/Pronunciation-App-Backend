@@ -337,7 +337,10 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     }
 
     function findHomophones(phonetic: string, excludeWord: string): string[] {
-      return (fullWordList as any[])
+      const allCurated = Object.values(curatedWordList).flat();
+      const allWords = [...(fullWordList as any[]), ...allCurated];
+
+      return allWords
         .filter(entry => entry.phonetic === phonetic && entry.word.toLowerCase() !== excludeWord.toLowerCase())
         .map(entry => entry.word.toLowerCase());
     }
