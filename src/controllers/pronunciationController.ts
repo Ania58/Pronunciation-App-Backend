@@ -341,11 +341,11 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
       const allWords = [...(fullWordList as any[]), ...allCurated];
 
       return allWords
-        .filter(entry => entry.phonetic === phonetic && entry.word.toLowerCase() !== excludeWord.toLowerCase())
+        .filter(entry => entry.ipa === phonetic && entry.word.toLowerCase() !== excludeWord.toLowerCase())
         .map(entry => entry.word.toLowerCase());
     }
 
-    const expectedPhonetic = wordEntry.phonetic;
+    const expectedPhonetic = wordEntry.ipa;
     let isHomophoneMatch = false;
 
     if (expectedPhonetic) {
