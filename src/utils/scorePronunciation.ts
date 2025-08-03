@@ -15,8 +15,8 @@ function findWordEntryByWord(word: string): WordEntry | undefined {
 }
 
 export function scorePronunciation(expected: string, transcript: string): number {
-  const cleanExpected = expected.trim().toLowerCase().replace(/[^\w\s']/g, '');
-  const cleanTranscript = transcript.trim().toLowerCase().replace(/[^\w\s']/g, '');
+  const cleanExpected = expected.trim().toLowerCase().replace(/[^\w\s'-]/g, '');
+  const cleanTranscript = transcript.trim().toLowerCase().replace(/[^\w\s'-]/g, '');
 
   const expectedEntry = findWordEntryByWord(cleanExpected);
   const transcriptEntry = findWordEntryByWord(cleanTranscript);

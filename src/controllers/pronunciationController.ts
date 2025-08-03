@@ -328,7 +328,7 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     };
 
     const rawTranscript = transcriptText || '';
-    const normalizedTranscript = rawTranscript.trim().toLowerCase().replace(/[^\w\s']/g, '');
+    const normalizedTranscript = rawTranscript.trim().toLowerCase().replace(/[^\w\s'-]/g, '');
     const normalizedExpected = expectedWord.trim().toLowerCase();
 
     if (equivalents[normalizedTranscript] === normalizedExpected) {
@@ -386,8 +386,8 @@ export const transcribePronunciation = async (req: Request, res: Response): Prom
     let finalFeedback = gptFeedback;
 
     if (!finalFeedback) {
-      const cleanTranscript = transcriptText?.toLowerCase().replace(/[^\w\s']/g, '').trim();
-      const cleanExpected = expectedWord?.toLowerCase().replace(/[^\w\s']/g, '').trim();
+      const cleanTranscript = transcriptText?.toLowerCase().replace(/[^\w\s'-]/g, '').trim();
+      const cleanExpected = expectedWord?.toLowerCase().replace(/[^\w\s'-]/g, '').trim();
 
       finalFeedback = `Your pronunciation was transcribed as: "${cleanTranscript}".\nExpected word: "${cleanExpected}".\n\n`;
 
